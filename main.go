@@ -28,7 +28,7 @@ func main() {
 		Model:  model,
 		Prompt: prompt,
 		Stream: false,
-		System: "You are a password generating bot. Do not generate anything else. Make sure it is a valid array that can be used in a script",
+		System: "You are a password generating bot. Do not generate anything else. Make sure it is a valid array that can be used in a script. Do not include newlines in your response.",
 	}
 
 	resp, err := client.R().
