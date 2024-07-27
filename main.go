@@ -13,7 +13,7 @@ import (
 const url = "http://localhost:11434/api/generate"
 const model = "llama3.1"
 const query = "names with 'jack'"
-const prompt = "Generate passwords that contain" + query + ". Return 10 passwords in a valid array."
+const prompt = "Generate passwords that contain" + query + ". Return 10 passwords in a valid array. "
 
 type PromptT struct {
 	Model  string `json:"model"`
@@ -30,11 +30,17 @@ type ResponseT struct {
 	Response     string `json:"response"`
 }
 
-func clean(resp string) string {
+func clean(resp string) []string {
 	cleanResp := strings.Trim(resp, "[]")
-	cleanResp = strings.ReplaceAll(cleanResp, "'", "")
-	cleanResp = strings.ReplaceAll(cleanResp, "\n", "")
-	return cleanResp
+	cleanResp = strings.Trim(cleanResp, "\n")
+	words := strings.Split(cleanResp, ",")
+
+	var result []string
+	for _, word := range words {
+		cleanedElement := strings.TrimSpace(strings.Trim(word, "\""))
+		result = append(result, cleanedElement)
+	}
+	return result
 }
 
 func generate() {
@@ -44,7 +50,7 @@ func generate() {
 		Model:  model,
 		Prompt: prompt,
 		Stream: false,
-		System: "You are a password generating bot. Do not generate anything else. Make sure it is a valid array that can be used in a script. Do not include newlines in your response. The array must follow the following format: ['password1','password2']",
+		System: "You are a password generating bot. Do not generate anything else. Make sure it is a valid array that can be used in a script. The array must follow the following format: ['password1','password2'].",
 	}
 
 	resp, err := client.R().
@@ -64,7 +70,11 @@ func generate() {
 	if err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
-	//fmt.Println(clean(response.Response))
+
+	words := clean(response.Response)
+	for _, word := range words {
+		fmt.Println("Generated word", word)
+	}
 	fmt.Println(response.Response)
 }
 
