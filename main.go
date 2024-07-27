@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -11,11 +12,12 @@ import (
 	"github.com/imroc/req/v3"
 )
 
-const url = "http://localhost:11434/api/generate"
-const model = "llama3.1"
-const query = "names with 'jack'"
-const prompt = "Generate passwords that contain" + query + ". Return 10 passwords in a valid array. "
-const iterations = 1
+var url string
+var model string
+var query string
+var count int
+var prompt = "Generate passwords that contain" + query + ". Return" + string(count) + "passwords in a valid array. "
+var iterations int
 
 type PromptT struct {
 	Model  string `json:"model"`
@@ -98,8 +100,26 @@ func generate() {
 }
 
 func main() {
+	//flags and command args
 	if len(os.Args) < 2 {
 		log.Fatal("Please provide a file to output stuff to!")
+	}
+	flag.StringVar(&url, "u", "http://localhost:11434/api/generate", "The ollama API URL")
+	flag.StringVar(&model, "m", "", "The model you plan to use")
+	if model == "" {
+		log.Fatal("Please provide a model\nExample: -m llama3.1")
+	}
+	flag.StringVar(&query, "q", "", "The query for the model")
+	if query == "" {
+		log.Fatal("Please provide a query\nExample: -q 'includes the name jack'")
+	}
+	flag.IntVar(&iterations, "a", 5, "The amount of passwords to generate in each request")
+	if iterations < 1 {
+		log.Fatal("You have to iterate at least once!\nExample: -i 5")
+	}
+	flag.IntVar(&count, "i", 5, "The amount of times the password generating loops")
+	if count < 1 {
+		log.Fatal("You have to have at least 1 password each iteration!\nExample: -c 5")
 	}
 	generate()
 }
