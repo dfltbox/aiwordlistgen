@@ -64,7 +64,7 @@ func generate() {
 	if err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
-	fmt.Println(clean(response.Response))
+	//fmt.Println(clean(response.Response))
 	fmt.Println(response.Response)
 }
 
