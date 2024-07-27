@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strings"
 
 	"github.com/imroc/req/v3"
 )
@@ -27,6 +28,13 @@ type ResponseT struct {
 	EvalDuration int    `json:"eval_duration"`
 	EvalCount    int    `json:"eval_count"`
 	Response     string `json:"response"`
+}
+
+func clean(resp string) string {
+	cleanResp := strings.Trim(resp, "[]")
+	cleanResp = strings.ReplaceAll(cleanResp, "'", "")
+	cleanResp = strings.ReplaceAll(cleanResp, "\n", "")
+	return cleanResp
 }
 
 func generate() {
@@ -56,6 +64,7 @@ func generate() {
 	if err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
+	fmt.Println(clean(response.Response))
 	fmt.Println(response.Response)
 }
 
