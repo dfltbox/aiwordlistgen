@@ -18,6 +18,7 @@ var query string
 var count int
 var prompt = "Generate passwords that contain" + query + ". Return" + string(count) + "passwords in a valid array. "
 var iterations int
+var completed int
 
 type PromptT struct {
 	Model  string `json:"model"`
@@ -47,8 +48,7 @@ func clean(resp string) []string {
 	return result
 }
 
-func appendtoOutput(text string) {
-	outputFile := os.Args[1]
+func appendtoOutput(text string, outputFile string) {
 	file, err := os.OpenFile(outputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
@@ -59,7 +59,7 @@ func appendtoOutput(text string) {
 	defer file.Close()
 }
 
-func generate() {
+func generate() string {
 	client := req.C()
 
 	Prompt := &PromptT{
@@ -87,39 +87,53 @@ func generate() {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
 	//for debug
-	response.Response = "['JackHammer88', 'JackSparrow123', 'JackDaniels77', 'JacksOrBetter11', 'JackOfAllTrades22', 'TheJackalope99', 'BlackJack777', 'CardSharkJack44', 'HighRollerJack55', 'LuckyJack999']"
+	//response.Response = "['JackHammer88', 'JackSparrow123', 'JackDaniels77', 'JacksOrBetter11', 'JackOfAllTrades22']"
 	words := clean(response.Response)
 	var appendedOutput string
 	for _, word := range words {
-		fmt.Println("Generated word", word)
 		appendedOutput = appendedOutput + word + "\n"
 	}
 	appendedOutput = strings.ReplaceAll(appendedOutput, "'", "")
-	appendtoOutput(appendedOutput)
-	fmt.Println(response.Response)
+
+	//fmt.Println(response.Response)
+
+	return appendedOutput
 }
 
 func main() {
+	completed = 0
 	//flags and command args
+
+	flag.StringVar(&url, "u", "http://localhost:11434/api/generate", "The ollama API URL")
+	flag.StringVar(&model, "m", "", "The model you plan to use")
+	flag.StringVar(&query, "q", "", "The query for the model")
+	flag.IntVar(&iterations, "a", 5, "The amount of passwords to generate in each request")
+	flag.IntVar(&count, "i", 5, "The amount of times the password generating loops")
+
+	flag.Parse()
+
 	if len(os.Args) < 2 {
 		log.Fatal("Please provide a file to output stuff to!")
 	}
-	flag.StringVar(&url, "u", "http://localhost:11434/api/generate", "The ollama API URL")
-	flag.StringVar(&model, "m", "", "The model you plan to use")
-	if model == "" {
-		log.Fatal("Please provide a model\nExample: -m llama3.1")
-	}
-	flag.StringVar(&query, "q", "", "The query for the model")
-	if query == "" {
-		log.Fatal("Please provide a query\nExample: -q 'includes the name jack'")
-	}
-	flag.IntVar(&iterations, "a", 5, "The amount of passwords to generate in each request")
-	if iterations < 1 {
-		log.Fatal("You have to iterate at least once!\nExample: -i 5")
-	}
-	flag.IntVar(&count, "i", 5, "The amount of times the password generating loops")
 	if count < 1 {
 		log.Fatal("You have to have at least 1 password each iteration!\nExample: -c 5")
 	}
-	generate()
+	if iterations < 1 {
+		log.Fatal("You have to iterate at least once!\nExample: -i 5")
+	}
+	if query == "" {
+		log.Fatal("Please provide a query\nExample: -q 'includes the name jack'")
+	}
+	if model == "" {
+		log.Fatal("Please provide a model\nExample: -m llama3.1")
+	}
+	for i := 0; i < iterations; i++ {
+		appenedOutput := generate()
+		oFile := flag.Args()[0]
+		appendtoOutput(appenedOutput, oFile)
+		completed += count
+		fmt.Println("Generated", completed, "/", iterations*count)
+	}
+	fmt.Println("Done!")
+
 }
