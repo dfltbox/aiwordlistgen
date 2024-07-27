@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/imroc/req/v3"
@@ -24,6 +26,12 @@ func main() {
 		Raw    bool   `json:"raw"`
 	}
 
+	type ResponseT struct {
+		EvalDuration int    `json:"eval_duration"`
+		EvalCount    int    `json:"eval_count"`
+		Response     string `json:"response"`
+	}
+
 	Prompt := &PromptT{
 		Model:  model,
 		Prompt: prompt,
@@ -34,7 +42,19 @@ func main() {
 	resp, err := client.R().
 		SetBody(Prompt).Post(url)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	fmt.Println(resp)
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Error reading response body: %v", err)
+	}
+
+	var response ResponseT
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		log.Fatalf("Error parsing JSON: %v", err)
+	}
+	fmt.Println(response.Response)
 }
