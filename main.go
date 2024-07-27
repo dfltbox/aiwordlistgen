@@ -16,21 +16,19 @@ func main() {
 	client := req.C()
 
 	type PromptT struct {
-		Model   string `json:"model"`
-		Prompt  string `json:"prompt"`
-		Format  string `json:"format"`
-		Stream  bool   `json:"stream"`
-		System  string `json:"system"`
-		Raw     bool   `json:"raw"`
-		Context string `json:"context"`
+		Model  string `json:"model"`
+		Prompt string `json:"prompt"`
+		Format string `json:"format"`
+		Stream bool   `json:"stream"`
+		System string `json:"system"`
+		Raw    bool   `json:"raw"`
 	}
 
 	Prompt := &PromptT{
-		Model:   model,
-		Prompt:  prompt,
-		Stream:  false,
-		Context: "",
-		System:  "You are a password generating bot. Do not generate anything else. Make sure it is a valid array that can be used in a script. Do not include newlines in your response.",
+		Model:  model,
+		Prompt: prompt,
+		Stream: false,
+		System: "You are a password generating bot. Do not generate anything else. Make sure it is a valid array that can be used in a script. Do not include newlines in your response. The array must follow the following format: ['password1','password2']",
 	}
 
 	resp, err := client.R().
