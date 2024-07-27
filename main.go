@@ -15,6 +15,7 @@ const url = "http://localhost:11434/api/generate"
 const model = "llama3.1"
 const query = "names with 'jack'"
 const prompt = "Generate passwords that contain" + query + ". Return 10 passwords in a valid array. "
+const iterations = 1
 
 type PromptT struct {
 	Model  string `json:"model"`
@@ -97,5 +98,8 @@ func generate() {
 }
 
 func main() {
+	if len(os.Args) < 2 {
+		log.Fatal("Please provide a file to output stuff to!")
+	}
 	generate()
 }
